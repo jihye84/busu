@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="강희자전 214부수의 이름을 붓글씨 화선지 위에서 4지선다로 맞히는 퀴즈">
+<meta property="og:title" content="묵향 부수 퀴즈">
+<meta property="og:description" content="214부수 이름 맞히기 · 10문제 세트 · 오답노트">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+body{margin:0;font-size:14px}
+[hidden]{display:none!important}
+</style>
+<title>묵향 부수 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Brush+Script&display=swap">
+<link rel="stylesheet" id="hanjaFont" href="">
+<style>
+/* Layout: 한 화면 고정. 위 띠(제목·점수) → 문제 화선지 → 보기 4칸 → 다음 줄. 오답노트·설정은 서랍. */
+:root{
+  --paper:#f3ecdc; --paper-2:#e9e0c9; --sheet:#fbf7ec;
+  --ink:#1d1b18; --ink-soft:#5b544a; --line:#c9bca0;
+  --seal:#b8321f; --seal-ink:#fff6ee; --ok:#2f6b4f; --bad:#b8321f;
+  --grid:rgba(184,50,31,.22);
+  --f-hanja:'Yuji Syuku','Noto Serif TC','Noto Serif KR',serif;
+  --f-body:'Gowun Batang','Nanum Myeongjo',serif;
+  --f-brush:'Nanum Brush Script','Gowun Batang',serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#16140f; --paper-2:#211e17; --sheet:#1d1a14;
+  --ink:#efe6d2; --ink-soft:#a99e88; --line:#3d372b;
+  --seal:#d4533c; --seal-ink:#1a0f0b; --ok:#6fb08c; --bad:#e0664e;
+  --grid:rgba(212,83,60,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#16140f; --paper-2:#211e17; --sheet:#1d1a14;
+  --ink:#efe6d2; --ink-soft:#a99e88; --line:#3d372b;
+  --seal:#d4533c; --seal-ink:#1a0f0b; --ok:#6fb08c; --bad:#e0664e;
+  --grid:rgba(212,83,60,.25); color-scheme:dark}
+html,body{height:100%;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);margin:0;
+  background-image:radial-gradient(circle at 20% 10%,rgba(0,0,0,.025) 0 1px,transparent 1.5px),radial-gradient(circle at 70% 60%,rgba(0,0,0,.02) 0 1px,transparent 1.5px);
+  background-size:7px 9px,11px 13px}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;gap:clamp(6px,1.4vh,14px);
+  padding-block:clamp(8px,1.6vh,16px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;flex:none}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.brand .seal{width:30px;height:30px;flex:none;background:var(--seal);color:var(--seal-ink);display:grid;place-items:center;
+  font-family:var(--f-hanja);font-size:20px;border-radius:3px;transform:rotate(-4deg)}
+.brand h1{margin:0;font-family:var(--f-brush);font-weight:400;font-size:clamp(24px,3.6vh,32px);line-height:1;white-space:nowrap}
+.score{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.score b{color:var(--ink)}
+.iconbtn{border:1px solid var(--line);background:var(--sheet);border-radius:6px;height:34px;padding:0 10px;font-size:13px;display:flex;align-items:center;gap:5px;flex:none}
+.iconbtn .n{background:var(--seal);color:var(--seal-ink);border-radius:9px;font-size:11px;padding:0 6px;line-height:17px;font-variant-numeric:tabular-nums}
+.modes{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);border-radius:6px;overflow:hidden;flex:none}
+.modes button{border:0;background:transparent;padding:clamp(6px,1.1vh,10px) 6px;font-size:clamp(13px,1.8vh,15px)}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.review{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--seal);border:1px dashed var(--seal);border-radius:6px;padding:5px 10px;flex:none}
+.review button{border:0;background:none;color:var(--seal);text-decoration:underline;font-size:13px;padding:0}
+.stage{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:clamp(8px,1.6vh,16px)}
+@media (min-width:720px) and (min-aspect-ratio:5/4){
+  .stage{grid-template-rows:1fr;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:stretch}
+}
+.sheet{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:4px;min-height:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+  box-shadow:0 1px 0 var(--line),0 10px 24px -18px rgba(0,0,0,.4)}
+.sheet .tag{position:absolute;top:10px;left:12px;font-size:12px;color:var(--ink-soft);letter-spacing:.06em}
+.sheet .num{position:absolute;top:10px;right:12px;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.box{position:relative;aspect-ratio:1;height:min(78%,64vw);max-width:100%;display:grid;place-items:center;border:1.5px solid var(--grid)}
+.box::before,.box::after{content:"";position:absolute;background:none}
+.box::before{left:50%;top:0;bottom:0;border-left:1.5px dashed var(--grid)}
+.box::after{top:50%;left:0;right:0;border-top:1.5px dashed var(--grid)}
+.big{position:relative;z-index:1;font-family:var(--f-hanja);line-height:1;font-size:min(32vh,50vw)}
+@media (min-width:720px) and (min-aspect-ratio:5/4){.big{font-size:min(44vh,26vw)}.box{height:min(80%,40vw)}}
+.prompt-name{font-family:var(--f-body);font-weight:700;text-align:center;font-size:clamp(30px,min(8vh,11vw),76px);line-height:1.15;padding:0 12px;text-wrap:balance}
+.prompt-sub{margin-top:clamp(6px,1.4vh,14px);font-size:clamp(13px,1.8vh,16px);color:var(--ink-soft)}
+.stamp{position:absolute;right:7%;bottom:9%;width:clamp(58px,10vh,92px);aspect-ratio:1;background:var(--seal);color:var(--seal-ink);
+  display:grid;place-items:center;font-family:var(--f-hanja);font-size:clamp(34px,6vh,56px);border-radius:6px;
+  transform:rotate(-8deg) scale(1);opacity:.92;z-index:2;box-shadow:inset 0 0 0 3px var(--sheet),inset 0 0 0 5px var(--seal)}
+.stamp.bad{background:transparent;color:var(--bad);box-shadow:inset 0 0 0 3px var(--bad)}
+.stamp.pop{animation:pop .28s ease-out}
+@keyframes pop{from{transform:rotate(-8deg) scale(1.6);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:.92}}
+.right{display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);min-height:0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.2vh,12px);flex:1;min-height:0}
+.opt{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:4px;
+  padding:clamp(8px,1.6vh,16px) 8px;min-height:clamp(54px,9.5vh,96px);display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:clamp(16px,2.6vh,22px);line-height:1.25;transition:transform .1s,border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:active:not(:disabled){transform:translateY(1px)}
+.opt.hz{font-family:var(--f-hanja);font-size:clamp(40px,min(9vh,13vw),84px);line-height:1}
+.opt .k{position:absolute;top:5px;left:8px;font-size:11px;color:var(--ink-soft);font-family:var(--f-body)}
+.opt.ok{border:2px solid var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--sheet))}
+.opt.no{border:2px solid var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--sheet));color:var(--ink-soft)}
+.opt.ok::after,.opt.no::after{position:absolute;top:4px;right:8px;font-size:13px;font-family:var(--f-body);font-weight:700}
+.opt.ok::after{content:"○";color:var(--ok)} .opt.no::after{content:"✕";color:var(--bad)}
+.foot{display:flex;align-items:center;gap:10px;min-height:clamp(46px,7vh,58px);flex:none}
+.explain{flex:1;min-width:0;font-size:clamp(13px,1.9vh,16px);line-height:1.35;color:var(--ink-soft)}
+.explain b{color:var(--ink);font-family:var(--f-hanja);font-weight:400;font-size:1.3em;margin-right:4px}
+.next{flex:none;background:var(--ink);color:var(--paper);border:0;border-radius:6px;padding:0 18px;height:clamp(42px,6vh,52px);font-size:15px}
+.next:disabled{opacity:.25;cursor:default}
+/* drawers */
+.scrim{position:fixed;inset:0;background:rgba(10,8,5,.45);z-index:20}
+.drawer{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--paper);border-top:2px solid var(--ink);
+  max-height:82%;display:flex;flex-direction:column;border-radius:12px 12px 0 0;
+  padding-top:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  max-width:760px;margin:0 auto;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.drawer h2{margin:0;font-family:var(--f-brush);font-weight:400;font-size:28px}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex:none}
+.close{border:1px solid var(--line);background:var(--sheet);border-radius:6px;height:32px;padding:0 12px;font-size:13px}
+.dbody{overflow-y:auto;min-height:0;flex:1}
+.wlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.witem{display:flex;align-items:center;gap:10px;background:var(--sheet);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+.witem .c{font-family:var(--f-hanja);font-size:34px;line-height:1;width:40px;text-align:center}
+.witem .t{flex:1;min-width:0;font-size:14px;line-height:1.3}
+.witem .t small{display:block;color:var(--ink-soft);font-size:12px}
+.witem .x{border:0;background:none;color:var(--ink-soft);font-size:16px;padding:4px}
+.dots{display:flex;gap:3px;margin-top:4px}.dots i{width:9px;height:9px;border-radius:2px;border:1px solid var(--seal)}.dots i.on{background:var(--seal)}
+.empty{color:var(--ink-soft);font-size:14px;padding:24px 0;text-align:center}
+.dact{display:flex;gap:8px;margin-top:12px;flex:none;flex-wrap:wrap}
+.dact button{flex:1;min-width:120px;height:42px;border-radius:6px;border:1px solid var(--ink);background:var(--sheet);font-size:14px}
+.dact .primary{background:var(--seal);border-color:var(--seal);color:var(--seal-ink)}
+.lbl{font-size:13px;color:var(--ink-soft);margin:6px 0 8px;letter-spacing:.04em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--sheet);border-radius:16px;padding:6px 12px;font-size:14px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.note{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:13px;z-index:40}
+.inapp{position:fixed;inset:0;z-index:50;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+.inapp p{margin:0;line-height:1.6}
+.inapp button{height:44px;padding:0 18px;border-radius:6px;border:0;background:var(--seal);color:var(--seal-ink)}
+.opts.res{grid-template-columns:repeat(5,1fr);gap:clamp(4px,1vh,8px)}
+.opt.cell{flex-direction:column;gap:2px;padding:4px 2px;min-height:0;cursor:default}
+.opt.cell .cc{font-family:var(--f-hanja);font-size:clamp(24px,min(5.5vh,8vw),48px);line-height:1}
+.opt.cell .cn{font-size:clamp(10px,1.5vh,13px);color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.opt.cell.ok::after,.opt.cell.no::after{top:2px;right:4px;font-size:11px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="seal" aria-hidden="true">部</div><h1>묵향 부수 퀴즈</h1></div>
+    <div class="score" id="score"></div>
+    <button class="iconbtn" id="openWrong" aria-label="오답노트 열기">오답 <span class="n" id="wrongN">0</span></button>
+    <button class="iconbtn" id="openSet" aria-label="설정 열기">설정</button>
+  </header>
+  <div class="modes" role="group" aria-label="문제 방식">
+    <button id="mA" aria-pressed="true">부수 보고 이름 고르기</button>
+    <button id="mB" aria-pressed="false">이름 보고 부수 고르기</button>
+  </div>
+  <div class="review" id="reviewBar" hidden><span id="reviewTxt"></span><button id="exitReview">복습 끝내기</button></div>
+  <main class="stage">
+    <section class="sheet" id="sheet" aria-live="polite"></section>
+    <div class="right">
+      <div class="opts" id="opts"></div>
+      <div class="foot">
+        <div class="explain" id="explain">보기를 골라 보세요.</div>
+        <button class="next" id="next" disabled>다음</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="layer"></div>
+
+<script>
+/* 카카오톡·페이스북·네이버 등 인앱 브라우저 → 기본 브라우저로 */
+(function(){
+  var ua=navigator.userAgent||'';
+  if(!/KAKAOTALK|FBAN|FBAV|FB_IAB|FBIOS|Instagram|NAVER\(inapp|NAVER|Line\/|DaumApps|everytimeApp|whale\/.*inapp/i.test(ua))return;
+  var url=location.href, isAndroid=/Android/i.test(ua), isIOS=/iPhone|iPad|iPod/i.test(ua);
+  try{
+    if(/KAKAOTALK/i.test(ua)){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);return;}
+    if(/Line\//i.test(ua)){location.href=url+(url.indexOf('?')>-1?'&':'?')+'openExternalBrowser=1';return;}
+    if(isAndroid){location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';return;}
+  }catch(e){}
+  if(isIOS){
+    document.addEventListener('DOMContentLoaded',function(){
+      var d=document.createElement('div');d.className='inapp';
+      d.innerHTML='<p><b>Safari에서 열어 주세요</b><br>오른쪽 아래(또는 위) ··· 메뉴에서<br>“Safari로 열기”를 누르면 돼요.</p><button id="cpy">주소 복사하기</button><p style="font-size:13px;opacity:.7">그래도 여기서 계속하려면 <u id="stay">닫기</u></p>';
+      document.body.appendChild(d);
+      d.querySelector('#cpy').onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(url).then(function(){this.textContent='복사됨';}.bind(this)).catch(function(){});};
+      d.querySelector('#stay').onclick=function(){d.remove();};
+    });
+  }
+})();
+
+/* 강희자전 214부수: 글자|획수|훈음|변형·부수명 */
+const RAW=`一|1|한 일|
+丨|1|뚫을 곤|
+丶|1|점 주|
+丿|1|삐침 별|
+乙|1|새 을|乚
+亅|1|갈고리 궐|
+二|2|두 이|
+亠|2|돼지해머리|머리 두
+人|2|사람 인|亻 사람인변
+儿|2|어진사람 인|
+入|2|들 입|
+八|2|여덟 팔|
+冂|2|멀 경|멀경몸
+冖|2|덮을 멱|민갓머리
+冫|2|얼음 빙|이수변
+几|2|안석 궤|
+凵|2|입벌릴 감|위튼입구몸
+刀|2|칼 도|刂 선칼도방
+力|2|힘 력|
+勹|2|쌀 포|쌀포몸
+匕|2|비수 비|
+匚|2|상자 방|튼입구몸
+匸|2|감출 혜|감출혜몸
+十|2|열 십|
+卜|2|점 복|
+卩|2|병부 절|㔾
+厂|2|언덕 엄|민엄호
+厶|2|사사 사|마늘모
+又|2|또 우|
+口|3|입 구|
+囗|3|에워쌀 위|큰입구몸
+土|3|흙 토|흙토변
+士|3|선비 사|
+夂|3|뒤져올 치|
+夊|3|천천히걸을 쇠|
+夕|3|저녁 석|
+大|3|큰 대|
+女|3|계집 녀|
+子|3|아들 자|
+宀|3|집 면|갓머리
+寸|3|마디 촌|
+小|3|작을 소|
+尢|3|절름발이 왕|
+尸|3|주검 시|주검시엄
+屮|3|왼손 좌|
+山|3|메 산|
+巛|3|내 천|개미허리 · 川
+工|3|장인 공|
+己|3|몸 기|
+巾|3|수건 건|
+干|3|방패 간|
+幺|3|작을 요|
+广|3|집 엄|엄호
+廴|3|길게걸을 인|민책받침
+廾|3|받들 공|스물입발
+弋|3|주살 익|
+弓|3|활 궁|
+彐|3|돼지머리 계|터진가로왈
+彡|3|터럭 삼|삐친석삼
+彳|3|조금걸을 척|두인변
+心|4|마음 심|忄 심방변
+戈|4|창 과|
+戶|4|지게 호|
+手|4|손 수|扌 재방변
+支|4|지탱할 지|
+攴|4|칠 복|攵 등글월문
+文|4|글월 문|
+斗|4|말 두|
+斤|4|날 근|도끼 근
+方|4|모 방|
+无|4|없을 무|이미기방
+日|4|날 일|
+曰|4|가로 왈|
+月|4|달 월|
+木|4|나무 목|
+欠|4|하품 흠|
+止|4|그칠 지|
+歹|4|뼈앙상할 알|죽을사변
+殳|4|몽둥이 수|갖은등글월문
+毋|4|말 무|
+比|4|견줄 비|
+毛|4|털 모|
+氏|4|각시 씨|
+气|4|기운 기|기운기엄
+水|4|물 수|氵 삼수변
+火|4|불 화|灬 연화발
+爪|4|손톱 조|
+父|4|아비 부|
+爻|4|점괘 효|
+爿|4|조각 장|장수장변
+片|4|조각 편|
+牙|4|어금니 아|
+牛|4|소 우|
+犬|4|개 견|犭 개사슴록변
+玄|5|검을 현|
+玉|5|구슬 옥|王 구슬옥변
+瓜|5|오이 과|
+瓦|5|기와 와|
+甘|5|달 감|
+生|5|날 생|
+用|5|쓸 용|
+田|5|밭 전|
+疋|5|필 필|발 소
+疒|5|병들 녁|병질엄
+癶|5|걸을 발|필발머리
+白|5|흰 백|
+皮|5|가죽 피|
+皿|5|그릇 명|
+目|5|눈 목|
+矛|5|창 모|
+矢|5|화살 시|
+石|5|돌 석|
+示|5|보일 시|礻 보일시변
+禸|5|짐승발자국 유|
+禾|5|벼 화|
+穴|5|구멍 혈|
+立|5|설 립|
+竹|6|대 죽|
+米|6|쌀 미|
+糸|6|실 사|
+缶|6|장군 부|
+网|6|그물 망|罒
+羊|6|양 양|
+羽|6|깃 우|
+老|6|늙을 로|耂
+而|6|말이을 이|
+耒|6|가래 뢰|
+耳|6|귀 이|
+聿|6|붓 율|
+肉|6|고기 육|月 육달월
+臣|6|신하 신|
+自|6|스스로 자|
+至|6|이를 지|
+臼|6|절구 구|
+舌|6|혀 설|
+舛|6|어그러질 천|
+舟|6|배 주|
+艮|6|괘이름 간|
+色|6|빛 색|
+艸|6|풀 초|艹 초두머리
+虍|6|범 호|범호엄
+虫|6|벌레 훼|
+血|6|피 혈|
+行|6|다닐 행|
+衣|6|옷 의|衤 옷의변
+襾|6|덮을 아|
+見|7|볼 견|
+角|7|뿔 각|
+言|7|말씀 언|
+谷|7|골 곡|
+豆|7|콩 두|
+豕|7|돼지 시|
+豸|7|발없는벌레 치|갖은돼지시변
+貝|7|조개 패|
+赤|7|붉을 적|
+走|7|달릴 주|
+足|7|발 족|
+身|7|몸 신|
+車|7|수레 거|
+辛|7|매울 신|
+辰|7|별 진|
+辵|7|쉬엄쉬엄갈 착|辶 책받침
+邑|7|고을 읍|阝 우부방
+酉|7|닭 유|
+釆|7|분별할 변|
+里|7|마을 리|
+金|8|쇠 금|
+長|8|길 장|
+門|8|문 문|
+阜|8|언덕 부|阝 좌부방
+隶|8|미칠 이|
+隹|8|새 추|
+雨|8|비 우|
+靑|8|푸를 청|
+非|8|아닐 비|
+面|9|낯 면|
+革|9|가죽 혁|
+韋|9|다룬가죽 위|
+韭|9|부추 구|
+音|9|소리 음|
+頁|9|머리 혈|
+風|9|바람 풍|
+飛|9|날 비|
+食|9|밥 식|飠 밥식변
+首|9|머리 수|
+香|9|향기 향|
+馬|10|말 마|
+骨|10|뼈 골|
+高|10|높을 고|
+髟|10|머리늘어질 표|터럭발
+鬥|10|싸울 투|
+鬯|10|울창주 창|
+鬲|10|솥 력|
+鬼|10|귀신 귀|
+魚|11|물고기 어|
+鳥|11|새 조|
+鹵|11|소금밭 로|
+鹿|11|사슴 록|
+麥|11|보리 맥|
+麻|11|삼 마|
+黃|12|누를 황|
+黍|12|기장 서|
+黑|12|검을 흑|
+黹|12|바느질할 치|
+黽|13|맹꽁이 맹|
+鼎|13|솥 정|
+鼓|13|북 고|
+鼠|13|쥐 서|
+鼻|14|코 비|
+齊|14|가지런할 제|
+齒|15|이 치|
+龍|16|용 룡|
+龜|16|거북 귀|
+龠|17|피리 약|`;
+const R=RAW.trim().split('\n').map(l=>{const[c,s,n,v]=l.split('|');return{c,s:+s,n,v:v||''}});
+const BY={};R.forEach(r=>BY[r.c]=r);
+
+/* 붓글씨 한자 글꼴: 필요한 글자만 받아오기 */
+(function(){const t=encodeURIComponent(R.map(r=>r.c).join('')+'部正再滿');
+document.getElementById('hanjaFont').href='https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Noto+Serif+TC:wght@500&display=swap&text='+t;})();
+
+const GROUPS=[{k:'1-2',l:'1~2획',f:s=>s<=2},{k:'3',l:'3획',f:s=>s==3},{k:'4',l:'4획',f:s=>s==4},{k:'5',l:'5획',f:s=>s==5},{k:'6',l:'6획',f:s=>s==6},{k:'7',l:'7획',f:s=>s==7},{k:'8+',l:'8~17획',f:s=>s>=8}];
+
+const store={get(k,d){try{const v=localStorage.getItem('bsq_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('bsq_'+k,JSON.stringify(v))}catch(e){}}};
+const SET=10, ESCAPE=4;
+const S={
+  mode:store.get('mode','A'),
+  groups:store.get('groups',GROUPS.map(g=>g.k)),
+  wrong:store.get('wrong',{}),
+  review:false, set:[], i:-1, res:[], q:null, answered:false, done:false, setNo:0
+};
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const varNote=r=>r.v?` · ${r.v}`:'';
+
+function pool(){
+  if(S.review)return Object.keys(S.wrong).map(c=>BY[c]).filter(Boolean);
+  const gs=GROUPS.filter(g=>S.groups.includes(g.k));
+  return R.filter(r=>gs.some(g=>g.f(r.s)));
+}
+function distractors(ans){
+  // 획수가 비슷한 부수를 먼저 섞어 헷갈리게
+  let pick=shuffle(R.filter(r=>r!==ans&&Math.abs(r.s-ans.s)<=1&&r.n!==ans.n)).slice(0,3);
+  if(pick.length<3)pick=pick.concat(shuffle(R.filter(r=>r!==ans&&!pick.includes(r))).slice(0,3-pick.length));
+  return pick;
+}
+function newSet(){
+  const p=pool();
+  if(!p.length){
+    if(S.review){S.review=false;toast('오답노트가 비어 있어요');return newSet()}
+    S.groups=GROUPS.map(g=>g.k);store.set('groups',S.groups);return newSet();
+  }
+  S.set=shuffle(p.slice()).slice(0,SET);S.i=-1;S.res=[];S.done=false;S.setNo++;
+  ask();
+}
+function ask(){
+  S.i++;const a=S.set[S.i];
+  S.q={a,opts:shuffle([a,...distractors(a)])};S.answered=false;
+  render();
+}
+function onNext(){
+  if(S.done){newSet();return}
+  if(!S.answered)return;
+  if(S.i>=S.set.length-1)showResult();else ask();
+}
+function render(){
+  const {a,opts}=S.q, A=S.mode==='A';
+  $('mA').setAttribute('aria-pressed',A);$('mB').setAttribute('aria-pressed',!A);
+  const sh=$('sheet');
+  sh.innerHTML=`<div class="tag">${S.review?'오답 복습 · ':''}${A?'이 부수의 이름은?':'이 이름의 부수는?'}</div><div class="num">${S.i+1} / ${S.set.length}</div>`+
+    (A?`<div class="box"><div class="big">${a.c}</div></div>`
+      :`<div class="prompt-name">${a.n}</div><div class="prompt-sub">${a.s}획 부수</div>`);
+  const o=$('opts');o.className='opts';o.innerHTML='';
+  opts.forEach((r,i)=>{
+    const b=document.createElement('button');b.className='opt'+(A?'':' hz');b.id='opt'+i;
+    b.innerHTML=`<span class="k">${i+1}</span>${A?r.n:r.c}`;
+    b.onclick=()=>choose(i);o.appendChild(b);
+  });
+  $('explain').innerHTML=A?`${a.s}획 부수예요. 알맞은 이름을 골라 보세요.`:'붓글씨 네 자 가운데 골라 보세요.';
+  $('next').disabled=true;$('next').textContent=S.i>=S.set.length-1?'결과 보기':'다음';
+  updateTop();
+}
+function choose(i){
+  if(S.answered||S.done)return;S.answered=true;
+  const {a,opts}=S.q, pick=opts[i], ok=pick===a;
+  S.res.push({a,ok});
+  [...document.querySelectorAll('.opt')].forEach((b,j)=>{b.disabled=true;if(opts[j]===a)b.classList.add('ok');else if(j===i)b.classList.add('no')});
+  const st=document.createElement('div');st.className='stamp pop'+(ok?'':' bad');st.textContent=ok?'正':'再';$('sheet').appendChild(st);
+  // 오답노트: 틀리면 쌓이고 연속 기록 0으로, 4번 연속 맞히면 탈출
+  const w=S.wrong[a.c];let note='';
+  if(!ok){const n=w||{c:0,s:0};n.c++;n.s=0;n.t=Date.now();S.wrong[a.c]=n;note=`<br><span style="color:var(--bad)">오답노트에 기록 · 4번 연속 맞혀야 탈출해요</span>`}
+  else if(w){w.s=(w.s||0)+1;
+    if(w.s>=ESCAPE){delete S.wrong[a.c];note=`<br><span style="color:var(--ok)">4번 연속 정답! 오답노트에서 탈출했어요</span>`;toast(`${a.c} 오답노트 탈출!`)}
+    else note=`<br><span style="color:var(--ok)">오답노트 연속 정답 ${w.s}/${ESCAPE}</span>`}
+  store.set('wrong',S.wrong);
+  const extra=(ok?'':`<br><span style="color:var(--bad)">고른 답: ${S.mode==='A'?pick.n:pick.c+' ('+pick.n+')'}</span>`)+note;
+  $('explain').innerHTML=`<b>${a.c}</b>${a.n} · ${a.s}획${varNote(a)}${extra}`;
+  $('next').disabled=false;$('next').focus({preventScroll:true});
+  updateTop();
+}
+function showResult(){
+  S.done=true;
+  const n=S.res.filter(r=>r.ok).length, tot=S.res.length, miss=S.res.filter(r=>!r.ok);
+  const seal=n===tot?'滿':n>=tot*.7?'正':'再';
+  $('sheet').innerHTML=`<div class="tag">${S.review?'오답 복습 ':''}${S.setNo}번째 세트 결과</div>
+    <div class="prompt-name" style="font-variant-numeric:tabular-nums">${n} <span style="color:var(--ink-soft);font-weight:400">/ ${tot}</span></div>
+    <div class="prompt-sub">${n===tot?'모두 맞혔어요!':miss.length+'개를 틀려서 오답노트에 쌓였어요'}</div>
+    <div class="stamp pop${n>=tot*.7?'':' bad'}">${seal}</div>`;
+  const o=$('opts');o.className='opts res';
+  o.innerHTML=S.res.map(r=>`<div class="opt cell ${r.ok?'ok':'no'}" title="${r.a.n}"><span class="cc">${r.a.c}</span><span class="cn">${r.a.n}</span></div>`).join('');
+  $('explain').innerHTML=miss.length?'틀린 부수는 오답노트에서 다시 볼 수 있어요.':'다음 세트도 도전해 보세요.';
+  $('next').disabled=false;$('next').textContent='새 세트';$('next').focus({preventScroll:true});
+  updateTop();
+}
+function updateTop(){
+  const right=S.res.filter(r=>r.ok).length;
+  $('score').innerHTML=`${S.setNo}세트 · <b>${right}</b>/${S.done?S.res.length:S.res.length}`;
+  $('wrongN').textContent=Object.keys(S.wrong).length;
+  $('reviewBar').hidden=!S.review;
+  if(S.review)$('reviewTxt').textContent=`오답 복습 중 · 오답노트 ${Object.keys(S.wrong).length}개에서 출제`;
+}
+function setMode(m){S.mode=m;store.set('mode',m);S.setNo=Math.max(0,S.setNo-(S.res.length?0:1));newSet()}
+function startReview(){if(!Object.keys(S.wrong).length)return;S.review=true;closeLayer();newSet()}
+function exitReview(){S.review=false;newSet()}
+
+/* 서랍 */
+function closeLayer(){$('layer').innerHTML=''}
+function drawer(title,body,actions){
+  $('layer').innerHTML=`<div class="scrim" id="scrim"></div><div class="drawer" role="dialog" aria-label="${title}"><div class="dhead"><h2>${title}</h2><button class="close" id="dclose">닫기</button></div><div class="dbody">${body}</div>${actions?`<div class="dact">${actions}</div>`:''}</div>`;
+  $('scrim').onclick=closeLayer;$('dclose').onclick=closeLayer;
+}
+function openWrong(){
+  const ks=Object.keys(S.wrong).sort((x,y)=>S.wrong[y].c-S.wrong[x].c||BY[x].s-BY[y].s);
+  const body=ks.length?`<div class="wlist">${ks.map(c=>{const r=BY[c];return`<div class="witem"><div class="c">${c}</div><div class="t">${r.n}<small>${r.s}획 · 틀림 ${S.wrong[c].c}</small><span class="dots" aria-label="연속 정답 ${S.wrong[c].s||0}/4">${[0,1,2,3].map(k=>`<i class="${k<(S.wrong[c].s||0)?'on':''}"></i>`).join('')}</span></div><button class="x" data-c="${c}" aria-label="${r.n} 지우기">✕</button></div>`}).join('')}</div>`
+    :`<div class="empty">아직 틀린 부수가 없어요. 틀리면 여기에 차곡차곡 모여요.</div>`;
+  const guide=`<p class="note" style="margin:0 0 10px">빨간 칸은 연속 정답 수예요. 4칸을 모두 채우면 오답노트에서 탈출하고, 중간에 틀리면 처음부터 다시 세요.</p>`;
+  drawer('오답노트',(ks.length?guide:'')+body,ks.length?`<button id="clearW">모두 지우기</button><button class="primary" id="goReview">오답만 다시 풀기 (${ks.length})</button>`:'');
+  document.querySelectorAll('.witem .x').forEach(b=>b.onclick=()=>{delete S.wrong[b.dataset.c];store.set('wrong',S.wrong);updateTop();openWrong()});
+  if(ks.length){$('goReview').onclick=startReview;
+    $('clearW').onclick=function(){if(this.dataset.sure){S.wrong={};store.set('wrong',S.wrong);updateTop();if(S.review)exitReview();openWrong()}else{this.dataset.sure=1;this.textContent='한 번 더 누르면 지워져요'}}}
+}
+function openSet(){
+  const body=`<div class="lbl">출제할 획수</div><div class="chips">${GROUPS.map(g=>`<button class="chip" data-k="${g.k}" aria-pressed="${S.groups.includes(g.k)}">${g.l} <small>${R.filter(r=>g.f(r.s)).length}</small></button>`).join('')}</div>
+  <div class="chips" style="margin-top:8px"><button class="chip" id="allG">전체 선택</button></div>
+  <p class="note">한 세트는 10문제예요. 214부수 가운데 고른 획수에서만 문제가 나와요. 보기는 획수가 비슷한 부수로 섞어서 헷갈리게 냅니다. 18획 이상인 부수는 없어요.<br>오답노트에 든 부수는 4번 연속 맞혀야 빠져나가요. 기록은 이 기기의 브라우저에 저장돼요.</p>`;
+  drawer('설정',body,`<button class="primary" id="applySet">적용하고 새 세트 풀기</button>`);
+  document.querySelectorAll('.chip[data-k]').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
+  $('allG').onclick=()=>document.querySelectorAll('.chip[data-k]').forEach(c=>c.setAttribute('aria-pressed','true'));
+  $('applySet').onclick=()=>{
+    const g=[...document.querySelectorAll('.chip[data-k][aria-pressed="true"]')].map(c=>c.dataset.k);
+    if(!g.length){toast('획수를 하나 이상 골라 주세요');return}
+    S.groups=g;store.set('groups',g);S.review=false;closeLayer();newSet();
+  };
+}
+let tt;function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);clearTimeout(tt);tt=setTimeout(()=>d.remove(),1800)}
+
+$('mA').onclick=()=>S.mode!=='A'&&setMode('A');
+$('mB').onclick=()=>S.mode!=='B'&&setMode('B');
+$('next').onclick=onNext;
+$('openWrong').onclick=openWrong;$('openSet').onclick=openSet;$('exitReview').onclick=exitReview;
+document.addEventListener('keydown',e=>{
+  if($('layer').innerHTML){if(e.key==='Escape')closeLayer();return}
+  if(!S.answered&&!S.done&&/^[1-4]$/.test(e.key))choose(+e.key-1);
+  else if((S.answered||S.done)&&(e.key==='Enter'||e.key===' ')){e.preventDefault();onNext()}
+});
+newSet();
+</script>
+</body>
+</html>
